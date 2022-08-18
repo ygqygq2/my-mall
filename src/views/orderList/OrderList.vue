@@ -10,7 +10,7 @@
         <div class="order__content">
           <div class="order__content__imgs">
             <template v-for="(innerItem, innerIndex) in item.products" :key="innerIndex">
-              <img class="order__content__img" :src="innerItem.product.img" />
+              <img class="order__content__img" :src="innerItem.product.imgUrl" />
             </template>
           </div>
           <div class="order__content__info">

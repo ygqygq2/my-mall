@@ -1,42 +1,14 @@
 import { createStore } from 'vuex'
 
-const setLocalCartList = (state) => {
-  const { cartList } = state;
-  const cartListString = JSON.stringify(cartList);
-  localStorage.cartList = cartListString;
+const setLocalList = (state, list) => {
+  const tmpList = state[list];
+  const tmpListString = JSON.stringify(tmpList);
+  localStorage[list] = tmpListString;
 }
 
-const getLocalCartList = () => {
+const getLocalList = (list) => {
   try {
-    return JSON.parse(localStorage.cartList);
-  } catch (e) {
-    return {}
-  }
-}
-
-const setLocalAddressList = (state) => {
-  const { addressList } = state;
-  const addressListString = JSON.stringify(addressList);
-  localStorage.addressList = addressListString;
-}
-
-const getLocalAddressList = () => {
-  try {
-    return JSON.parse(localStorage.addressList);
-  } catch (e) {
-    return {}
-  }
-}
-
-const setLocalAddress = (state) => {
-  const { address } = state;
-  const addressString = JSON.stringify(address);
-  localStorage.address = addressString;
-}
-
-const getLocalAddress = () => {
-  try {
-    return JSON.parse(localStorage.address);
+    return JSON.parse(localStorage[list]);
   } catch (e) {
     return {}
   }
@@ -44,7 +16,7 @@ const getLocalAddress = () => {
 
 export default createStore({
   state: {
-    cartList: getLocalCartList(),
+    cartList: getLocalList('cartList'),
     // cartList: {
     // 第一层级： 商铺 id
     // 第二层级： 商铺名、商品列表
@@ -62,7 +34,7 @@ export default createStore({
     //     }
     //   }
     // }
-    addressList: getLocalAddressList(),
+    addressList: getLocalList('addressList'),
     // id: '1069643013',
     // addressList: [{
     //     _id: '1',
@@ -81,7 +53,7 @@ export default createStore({
     //     phone: 18911023277
     //   }
     // ]
-    address: getLocalAddress()
+    address: getLocalList('address')
   },
   getters: {
   },
@@ -95,7 +67,7 @@ export default createStore({
       if (!product) {
         productInfo.count = 0
         product = productInfo
-        setLocalCartList(state);
+        setLocalList(state, 'cartList');
       }
       product.count = product.count + payload.num;
       if (payload.num > 0) { product.check = true }
@@ -104,7 +76,7 @@ export default createStore({
       }
       shopInfo.productList[productId] = product;
       state.cartList[shopId] = shopInfo;
-      setLocalCartList(state);
+      setLocalList(state, 'cartList');
     },
     // 修改商店名
     changeShopName(state, payload) {
@@ -112,20 +84,20 @@ export default createStore({
       const shopInfo = state.cartList[shopId] || { shopName: '', productList: {} };
       shopInfo.shopName = shopName;
       state.cartList[shopId] = shopInfo;
-      setLocalCartList(state);
+      setLocalList(state, 'cartList');
     },
     // 是否添加商品到购物车
     changeCartItemChecked(state, payload) {
       const { shopId, productId } = payload;
       const product = state.cartList[shopId].productList[productId];
       product.check = !product.check;
-      setLocalCartList(state)
+      setLocalList(state, 'cartList');
     },
     // 清空购物车
     cleanCartProducts(state, payload) {
       const { shopId } = payload;
       state.cartList[shopId].productList = {};
-      setLocalCartList(state);
+      setLocalList(state, 'cartList');
     },
     // 购物车全选与否
     setCartItemsChecked(state, payload) {
@@ -137,7 +109,7 @@ export default createStore({
           product.check = !product.check;
         }
       }
-      setLocalCartList(state);
+      setLocalList(state, 'cartList');
     },
     // 删除购物车数据
     clearCartData(state, shopId) {
@@ -147,13 +119,13 @@ export default createStore({
     saveAddressInfo(state, payload) {
       const { addressList } = payload;
       state.addressList = addressList;
-      setLocalAddressList(state);
+      setLocalList(state, 'addressList');
     },
     // 保存编辑时表单地址临时数据
     saveEditAddress(state, payload) {
       const { address } = payload;
       state.address = address;
-      setLocalAddress(state);
+      setLocalList(state, 'address');
     },
     // 修改地址列表
     changeAddressItemInfo(state, payload) {
@@ -163,12 +135,11 @@ export default createStore({
 
       for (const item of addressList) {
         if (parseInt(item._id, 10) === parseInt(props.addressId, 10)) {
-          console.log(item, address)
           Object.assign(item, address);
           break;
         }
       }
-      setLocalAddressList(state);
+      setLocalList(state, 'addressList');
     }
   },
   actions: {
