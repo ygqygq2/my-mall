@@ -94,7 +94,6 @@ export default createStore({
       };
       shopInfo.shopName = shopName;
       state.cartList[shopId] = shopInfo;
-      console.log(state);
       setLocalData(state, 'cartList');
     },
     // 是否添加商品到购物车
