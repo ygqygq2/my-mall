@@ -16,7 +16,7 @@ export const useAddressEffect = (props, context) => {
     hourse: '',
     floor: '',
     consignee: '',
-    phone: 0
+    phone: ''
   });
 
   // 合并表单数据至 address 对象
@@ -27,7 +27,7 @@ export const useAddressEffect = (props, context) => {
   // 填充表单
   const fillForm = () => {
     for (const item of store.state.addressList) {
-      if (parseInt(item._id, 10) === parseInt(props.addressId, 10)) {
+      if (item._id === props.addressId) {
         updateAddress(item)
         break;
       }

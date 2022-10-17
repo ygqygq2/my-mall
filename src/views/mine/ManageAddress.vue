@@ -4,16 +4,24 @@
     <div class="content__title">
       <span class="content__title_name">我的收货地址</span>
     </div>
-    <div class="content__address" v-for="(item, index) in data.addressList" :key="index">
+    <div
+      class="content__address"
+      v-for="(item, index) in data.addressList"
+      :key="index"
+    >
       <div class="content__address__left">
         <div class="content__address__left__info">
-          <span class="content__address__left__name">{{item.consignee}}</span>
-          <span class="content__address__left__phone">{{item.phone}}</span>
-          <div>{{item.city}} {{item.hourse}} {{item.floor}}</div>
+          <span class="content__address__left__name">{{ item.consignee }}</span>
+          <span class="content__address__left__phone">{{ item.phone }}</span>
+          <div>{{ item.city }} {{ item.hourse }} {{ item.floor }}</div>
         </div>
       </div>
       <div class="content__address__right">
-        <span class="content__address__right__icon iconfont" @click="() => pushAddress(item._id)">&#xe6aa;</span>
+        <span
+          class="content__address__right__icon iconfont"
+          @click="() => pushAddress(item._id)"
+          >&#xe6aa;</span
+        >
       </div>
     </div>
   </div>
@@ -94,6 +102,7 @@ export default {
     background-color: $bgcolor;
     border-radius: 0.04rem;
     &__left {
+      flex: 1;
       margin-right: 0.38rem;
       &__info {
         color: $light-fontcolor;

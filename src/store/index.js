@@ -1,22 +1,22 @@
-import { createStore } from 'vuex'
+import { createStore } from 'vuex';
 
-const setLocalList = (state, list) => {
-  const tmpList = state[list];
-  const tmpListString = JSON.stringify(tmpList);
-  localStorage[list] = tmpListString;
-}
+const setLocalData = (state, data) => {
+  const tmpData = state[data];
+  const tmpDataString = JSON.stringify(tmpData);
+  localStorage[data] = tmpDataString;
+};
 
-const getLocalList = (list) => {
+const getLocalData = (data) => {
   try {
-    return JSON.parse(localStorage[list]);
+    return JSON.parse(localStorage[data]);
   } catch (e) {
-    return {}
+    return {};
   }
-}
+};
 
 export default createStore({
   state: {
-    cartList: getLocalList('cartList'),
+    cartList: getLocalData('cartList'),
     // cartList: {
     // 第一层级： 商铺 id
     // 第二层级： 商铺名、商品列表
@@ -34,7 +34,7 @@ export default createStore({
     //     }
     //   }
     // }
-    addressList: getLocalList('addressList'),
+    addressList: getLocalData('addressList'),
     // id: '1069643013',
     // addressList: [{
     //     _id: '1',
@@ -53,51 +53,62 @@ export default createStore({
     //     phone: 18911023277
     //   }
     // ]
-    address: getLocalList('address')
+    address: getLocalData('address'),
+    orderAddress: getLocalData('orderAddress')
   },
-  getters: {
-  },
+  getters: {},
   mutations: {
     // 修改购物车列表信息
     changeCartItemInfo(state, payload) {
       const { shopId, productId, productInfo } = payload;
-      let shopInfo = state.cartList[shopId] || { shopName: '', productList: {} };
-      if (!shopInfo) { shopInfo = {} }
+      let shopInfo = state.cartList[shopId] || {
+        shopName: '',
+        productList: {}
+      };
+      if (!shopInfo) {
+        shopInfo = {};
+      }
       let product = shopInfo?.productList[productId];
       if (!product) {
-        productInfo.count = 0
-        product = productInfo
-        setLocalList(state, 'cartList');
+        productInfo.count = 0;
+        product = productInfo;
+        setLocalData(state, 'cartList');
       }
       product.count = product.count + payload.num;
-      if (payload.num > 0) { product.check = true }
+      if (payload.num > 0) {
+        product.check = true;
+      }
       if (product.count < 0) {
-        product.count = 0
+        product.count = 0;
       }
       shopInfo.productList[productId] = product;
       state.cartList[shopId] = shopInfo;
-      setLocalList(state, 'cartList');
+      setLocalData(state, 'cartList');
     },
     // 修改商店名
     changeShopName(state, payload) {
       const { shopId, shopName } = payload;
-      const shopInfo = state.cartList[shopId] || { shopName: '', productList: {} };
+      const shopInfo = state.cartList[shopId] || {
+        shopName: '',
+        productList: {}
+      };
       shopInfo.shopName = shopName;
       state.cartList[shopId] = shopInfo;
-      setLocalList(state, 'cartList');
+      console.log(state);
+      setLocalData(state, 'cartList');
     },
     // 是否添加商品到购物车
     changeCartItemChecked(state, payload) {
       const { shopId, productId } = payload;
       const product = state.cartList[shopId].productList[productId];
       product.check = !product.check;
-      setLocalList(state, 'cartList');
+      setLocalData(state, 'cartList');
     },
     // 清空购物车
     cleanCartProducts(state, payload) {
       const { shopId } = payload;
       state.cartList[shopId].productList = {};
-      setLocalList(state, 'cartList');
+      setLocalData(state, 'cartList');
     },
     // 购物车全选与否
     setCartItemsChecked(state, payload) {
@@ -109,7 +120,7 @@ export default createStore({
           product.check = !product.check;
         }
       }
-      setLocalList(state, 'cartList');
+      setLocalData(state, 'cartList');
     },
     // 删除购物车数据
     clearCartData(state, shopId) {
@@ -119,13 +130,13 @@ export default createStore({
     saveAddressInfo(state, payload) {
       const { addressList } = payload;
       state.addressList = addressList;
-      setLocalList(state, 'addressList');
+      setLocalData(state, 'addressList');
     },
     // 保存编辑时表单地址临时数据
     saveEditAddress(state, payload) {
       const { address } = payload;
       state.address = address;
-      setLocalList(state, 'address');
+      setLocalData(state, 'address');
     },
     // 修改地址列表
     changeAddressItemInfo(state, payload) {
@@ -134,16 +145,20 @@ export default createStore({
       const { props } = payload;
 
       for (const item of addressList) {
-        if (parseInt(item._id, 10) === parseInt(props.addressId, 10)) {
+        if (item._id === props.addressId) {
           Object.assign(item, address);
           break;
         }
       }
-      setLocalList(state, 'addressList');
+      setLocalData(state, 'addressList');
+    },
+    // 保存 orderAddress
+    changeOrderAddress(state, payload) {
+      const { orderAddress } = payload;
+      state.orderAddress = orderAddress;
+      setLocalData(state, 'orderAddress');
     }
   },
-  actions: {
-  },
-  modules: {
-  }
+  actions: {},
+  modules: {}
 });

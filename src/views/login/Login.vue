@@ -55,7 +55,8 @@ const useLoginEffect = (showToast) => {
       });
       if (result?.errno === 0) {
         localStorage.isLogin = true;
-        localStorage.id = result.id;
+        localStorage.id = result?.data?.uid;
+        localStorage.username = data.username;
         router.push({ name: 'Home' });
       } else {
         showToast('登录失败');

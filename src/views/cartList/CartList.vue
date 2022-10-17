@@ -2,16 +2,16 @@
   <div class="wrapper">
     <div class="title">我的全部购物车</div>
     <div class="carts">
-      <div class="cart" v-for="(item, index) in list" :key="index">
+      <div class="cart" v-for="(item, key) in list" :key="key">
         <div class="cart__title">
-          {{ item.shopName }}
+          {{ item['shopName'] }}
         </div>
         <div class="cart__content">
           <template
-            v-for="(innerItem, innerIndex) in item.product"
+            v-for="(innerItem, innerIndex) in item.productList"
             :key="innerIndex"
           >
-            <div class="cart__content__item">
+            <div class="cart__content__item" v-if="innerItem.count > 0">
               <img class="cart__content__img" :src="innerItem.imgUrl" />
               <div class="cart__content__data">
                 <div class="cart__content__name">
@@ -21,13 +21,16 @@
                   <div class="cart__content__price">
                     &yen;{{ innerItem.price }} x {{ innerItem.count }}
                   </div>
-                  <div class="cart__content__total" >&yen; {{ (innerItem.price * innerItem.count).toFixed(2) }}</div>
+                  <div class="cart__content__total">
+                    &yen; {{ (innerItem.price * innerItem.count).toFixed(2) }}
+                  </div>
                 </div>
               </div>
             </div>
           </template>
           <div class="cart__content__count">
-            共计 {{ item.product.length }} 件/7.0kg
+            共计
+            {{ Object.getOwnPropertyNames(item.productList).length }} 件/7.0kg
             <!-- <span class="iconfont">&#xe613;</span> -->
           </div>
         </div>
@@ -39,18 +42,24 @@
 
 <script>
 import { reactive, toRefs } from 'vue';
-import { get } from '../../utils/request';
+// import { get } from '../../utils/request';
 import Docker from '../../components/Docker.vue';
 
 // 处理购物车逻辑
 const useCartListEffect = () => {
   const data = reactive({ list: {} });
 
+  // const getCartList = async () => {
+  //   const result = await get('/api/cart/list');
+  //   if (result?.errno === 0 && result?.data?.length) {
+  //     data.list = result.data;
+  //   }
+  // };
+
+  // 使用本地数据
   const getCartList = async () => {
-    const result = await get('/api/cart/list');
-    if (result?.errno === 0 && result?.data?.length) {
-      data.list = result.data;
-    }
+    const { cartList } = localStorage;
+    data.list = JSON.parse(cartList);
   };
 
   getCartList();
@@ -63,12 +72,10 @@ export default {
   components: { Docker },
   setup() {
     const { list } = useCartListEffect();
-
     return { list };
   }
 };
 </script>
-
 <style lang="scss" scoped>
 @import '../../style/variables.scss';
 @import '../../style/mixins.scss';

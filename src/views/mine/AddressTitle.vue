@@ -1,14 +1,19 @@
 <template>
   <div class="title">
     <div class="title__back">
-      <span class="title__back__icon iconfont" @click="handleBack">&#xe6db;</span>
+      <span class="title__back__icon iconfont" @click="handleBack"
+        >&#xe6db;</span
+      >
     </div>
-    <span class="title__content">{{titleInfo.title}}收货地址</span>
+    <span class="title__content">{{ titleInfo.title }}收货地址</span>
     <div class="title__save">
       <span
         class="title__save__btn"
-        @click="() => handleAddressClick(titleInfo.btnAction, handleAddressSave)"
-      >{{titleInfo.btn}}</span>
+        @click="
+          () => handleAddressClick(titleInfo.btnAction, handleAddressSave)
+        "
+        >{{ titleInfo.btn }}</span
+      >
     </div>
   </div>
   <Toast v-if="show" :message="toastMessage" />
@@ -17,8 +22,9 @@
 <script>
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { get, post } from '../../utils/request';
+import { post, patch } from '../../utils/request';
 import { useBackRouterEffect } from '../../effects/backEffect';
+import { handleAddressGet } from '../../effects/addressEffect';
 import Toast, { useToastEffect } from '../../components/Toast';
 
 // 头部信息相关逻辑
@@ -58,22 +64,23 @@ const useBtnEffect = () => {
 // 地址相关逻辑
 const useAddressEffect = (props, context, showToast) => {
   // 从本地缓存获取用户 id
-  const { id } = localStorage;
+  const { username } = localStorage;
   const store = useStore();
 
-  const handleAddressGet = async () => {
-    try {
-      const result = await get('/api/address/list', {
-        id
-      });
-      if (result?.errno === 0 && result?.data) {
-        const addressList = result.data.addressList;
-        return addressList;
-      }
-    } catch (e) {
-      showToast('请求失败');
-    }
-  };
+  // const handleAddressGet = async () => {
+  //   try {
+  //     const result = await get('/api/user/address', {
+  //       username
+  //     });
+  //     if (result?.errno === 0 && result?.data) {
+  //       const addressList = result.data;
+  //       return addressList;
+  //     }
+  //   } catch (e) {
+  //     showToast('请求失败');
+  //   }
+  // };
+  handleAddressGet(username, showToast);
 
   const handleAddressSave = async () => {
     let { address } = localStorage;
@@ -94,15 +101,27 @@ const useAddressEffect = (props, context, showToast) => {
       return;
     }
 
+    let result;
     try {
-      const result = await post('/api/address/register', {
-        id: id,
-        city: address.city,
-        hourse: address.hourse,
-        floor: address.floor,
-        consignee: address.consignee,
-        phone: address.phone
-      });
+      if (props.addressId) {
+        result = await patch(`/api/user/address/${props.addressId}`, {
+          username,
+          city: address.city,
+          hourse: address.hourse,
+          floor: address.floor,
+          consignee: address.consignee,
+          phone: address.phone
+        });
+      } else {
+        result = await post('/api/user/address', {
+          username,
+          city: address.city,
+          hourse: address.hourse,
+          floor: address.floor,
+          consignee: address.consignee,
+          phone: address.phone
+        });
+      }
       if (result?.errno === 0) {
         store.commit('changeAddressItemInfo', {
           props
@@ -166,8 +185,12 @@ export default {
     display: flex;
     justify-content: left;
     align-items: center;
-    color: #b6b6b6;
     font-size: 0.24rem;
+    &__icon {
+      width: 0.3rem;
+      font-size: 0.24rem;
+      color: #b6b6b6;
+    }
   }
   &__content {
     flex: 1;

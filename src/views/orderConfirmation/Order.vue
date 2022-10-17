@@ -4,15 +4,27 @@
       实付金额&nbsp;
       <b>&yen;{{ calculations.price }}</b>
     </div>
-    <div class="order__btn" @click="() => handleSubmitClick(true)">提交订单</div>
+    <div class="order__btn" @click="() => handleSubmitClick(true)">
+      提交订单
+    </div>
   </div>
   <div class="mask" v-show="showConfirm" @click="() => handleSubmitClick(true)">
     <div class="mask__content">
       <h3 class="mask__content__title">确认要离开收银台？</h3>
       <p class="mask__content__desc">请尽快完成支付，否则将被取消</p>
       <div class="mask__content__btns">
-        <div class="mask__content__btn mask__content__btn--first" @click="() => handleConfirmOrder(true)">取消订单</div>
-        <div class="mask__content__btn mask__content__btn--last" @click="() => handleConfirmOrder(false)">确认支付</div>
+        <div
+          class="mask__content__btn mask__content__btn--first"
+          @click="() => handleConfirmOrder(true)"
+        >
+          取消订单
+        </div>
+        <div
+          class="mask__content__btn mask__content__btn--last"
+          @click="() => handleConfirmOrder(false)"
+        >
+          确认支付
+        </div>
         <Toast v-if="show" :message="toastMessage" />
       </div>
     </div>
@@ -39,18 +51,27 @@ const useMakeOrderEffect = (shopId, shopName, productList) => {
     showConfirm.value = status;
   };
 
+  const getAddressId = () => {
+    // 从 localStorage 中获取 orderAddress
+    const { orderAddress } = localStorage;
+    const addressId = JSON.parse(orderAddress)._id;
+    return addressId;
+  };
+
   const handleConfirmOrder = async (isCanceled) => {
+    const addressId = getAddressId();
     const products = [];
     for (const i in productList.value) {
       const product = productList.value[i];
       products.push({
-        id: parseInt(product._id, 10),
+        id: product._id,
         num: product.count
       });
     }
+
     try {
       const result = await post('/api/order', {
-        addressId: 1,
+        addressId: addressId,
         shopId,
         shopName: shopName.value,
         isCanceled,
@@ -71,10 +92,11 @@ const useMakeOrderEffect = (shopId, shopName, productList) => {
 export default {
   name: 'Order',
   components: { Toast },
+  props: ['shopId'],
   setup() {
     const route = useRoute();
 
-    const shopId = parseInt(route.params.id, 10);
+    const shopId = route.params.id;
     const { calculations, shopName, productList } = useCommonCartEffect(shopId);
     const { show, toastMessage } = useToastEffect();
     const { showConfirm, handleConfirmOrder, handleSubmitClick } =

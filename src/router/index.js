@@ -1,4 +1,5 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router';
+import { get } from '../utils/request';
 
 const routes = [
   {
@@ -64,18 +65,28 @@ const routes = [
       isLogin ? next({ name: 'Home' }) : next();
     }
   }
-]
+];
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes
-})
+});
 
 router.beforeEach((to, from, next) => {
-  const { isLogin } = localStorage;
-  const { name } = to;
-  const isLoginOrRegister = (name === "Login" || name === "Register");
-  (isLogin || isLoginOrRegister) ? next() : next({ name: 'Login' });
-})
+  // 通过获取用户信息判断 session 是否过期
+  const getUserInfo = async () => {
+    const result = await get('/api/user/info');
+    if (result?.errno !== 0) {
+      localStorage.isLogin = '';
+    }
+  };
 
-export default router
+  getUserInfo();
+  const { isLogin } = localStorage;
+
+  const { name } = to;
+  const isLoginOrRegister = name === 'Login' || name === 'Register';
+  isLogin || isLoginOrRegister ? next() : next({ name: 'Login' });
+});
+
+export default router;

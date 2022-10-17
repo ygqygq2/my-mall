@@ -1,31 +1,92 @@
 <template>
   <div class="top">
     <div class="top__header">
-      <div class="top__header__back iconfont" @click="handleBackClick">&#xe6db;</div>确认订单
+      <div class="top__header__back iconfont" @click="handleBack">&#xe6db;</div>
+      确认订单
     </div>
-    <div class="top__receiver">
-      <div class="top__receiver__title">收货地址</div>
-      <div class="top__receiver__address">北京理工大学国防科技园2号楼10层</div>
-      <div class="top__receiver__info">
-        <span class="top__receiver__info__name">瑶妹（先生）</span>
-        <span class="top__receiver__info__phone">15151515151</span>
+    <div class="top__address">
+      <div class="top__address__title">收货地址</div>
+      <div class="top__address__address">
+        {{ address.city }}{{ address.hourse }}
       </div>
-      <div class="top__receiver__icon iconfont">&#xe6aa;</div>
+      <div class="top__address__info">
+        <span class="top__address__info__name">{{ address.consignee }}</span>
+        <span class="top__address__info__phone">{{ address.phone }}</span>
+      </div>
+      <div class="top__address__icon iconfont" @click="showAddressList(true)">
+        &#xe6aa;
+      </div>
     </div>
+  </div>
+  <div v-show="isShow">
+    <AddressList
+      @show-address-list="showAddressList"
+      :orderAddress="address"
+      @update-address="updateAddress"
+    />
   </div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
+import { reactive, toRefs, ref, watchEffect } from 'vue';
+import { useStore } from 'vuex';
+import { get } from '../../utils/request';
+import AddressList from './AddressList.vue';
+import { useBackRouterEffect } from '../..//effects/backEffect';
+import { useShowAddressListEffect } from './showAddressListEffect';
+// import { handleAddressGet } from '../../effects/addressEffect';
+
+const useAddressEffect = () => {
+  const store = useStore();
+  const data = reactive({ address: {} });
+
+  const getOrderAddress = async () => {
+    // 从 localStorage 中获取 orderAddress
+    const { orderAddress } = localStorage;
+    if (orderAddress) {
+      data.address = JSON.parse(orderAddress);
+    } else {
+      const result = await get('/api/user/address/1');
+      if (result?.errno === 0 && result?.data) {
+        data.address = result.data;
+        // 使用 store 保存 orderAddress
+        store.commit('changeOrderAddress', { orderAddress: result.data });
+      }
+    }
+  };
+
+  const updateAddress = (address) => {
+    data.address = address;
+    // 使用 store 保存 orderAddress
+    store.commit('changeOrderAddress', { orderAddress: address });
+  };
+
+  const { address } = toRefs(data);
+
+  return { address, getOrderAddress, updateAddress };
+};
+
 export default {
   name: 'TopArea',
+  components: { AddressList },
   setup() {
-    const router = useRouter();
-    const handleBackClick = () => {
-      router.back();
-    };
+    const isShow = ref(false);
+    const { handleBack } = useBackRouterEffect();
+    const { address, getOrderAddress, updateAddress } = useAddressEffect();
+    const { showAddressList } = useShowAddressListEffect(isShow);
 
-    return { handleBackClick };
+    watchEffect(() => {
+      getOrderAddress();
+    });
+
+    return {
+      address,
+      handleBack,
+      isShow,
+      showAddressList,
+      getOrderAddress,
+      updateAddress
+    };
   }
 };
 </script>
@@ -51,7 +112,7 @@ export default {
       font-size: 0.22rem;
     }
   }
-  &__receiver {
+  &__address {
     position: absolute;
     left: 0.18rem;
     right: 0.18rem;
